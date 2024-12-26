@@ -1,0 +1,65 @@
+import pandas as pd   
+import numpy as np   
+import matplotlib.pyplot as plt   
+plt.rc('font',family='Times New Roman')
+from datetime import datetime   
+import matplotlib.dates as mdates    
+import matplotlib.ticker as ticker
+
+  
+def read_top_data(filename):   
+    data = []  
+    with open(filename, 'r') as file:   
+        for line in file:   
+            year, month, day, hour, top1, top2 = line.strip().split()   
+            year = int(year)   
+            month = int(month)   
+            day = int(day)   
+            hour = int(hour)   
+            top1 = float(top1)  
+            top2 = float(top2)  
+            time = datetime(year, month, day, hour)   
+            data.append([time, top1, top2])   
+    return data   
+  
+data = read_top_data('py_top.txt')   
+df = pd.DataFrame(data, columns=['Time', 'Top1', 'Top2'])   
+print(df)  
+df.to_csv('D:/work/file1.csv', index=False)   
+  
+
+df['Top1'] = pd.to_numeric(df['Top1'], errors='coerce')   
+df['Top2'] = pd.to_numeric(df['Top2'], errors='coerce')   
+df = df.dropna(subset=['Top1', 'Top2'])   
+df.reset_index(drop=True, inplace=True)   
+df['difference'] = df['Top1'] - df['Top2']   
+
+
+plt.figure(figsize=(11, 7))   
+plt.scatter(df['Time'], df['difference'], color='blue')   
+plt.ylim(-3,3)   
+plt.xlabel('Time', fontsize=30)   
+plt.ylabel('Difference', fontsize=30)   
+ax = plt.gca()
+
+locator = mdates.DayLocator(interval=14)  
+formatter = mdates.AutoDateFormatter(locator)  
+ax.xaxis.set_major_formatter(formatter)  
+
+ax.xaxis.set_major_locator(locator)    
+start_date = pd.to_datetime('2020-06-01 00:00:00')  
+end_date = pd.to_datetime('2020-07-31 23:00:00')  
+plt.xlim(start_date, end_date) 
+plt.text(start_date, plt.ylim()[0]-0.33, '06/01', ha='center', fontsize=25)  
+plt.text(end_date+pd.Timedelta(days=2), plt.ylim()[0]-0.33, ' 07/31', ha='right', fontsize=25)
+
+date_format = mdates.DateFormatter('%m/%d')  
+ax.xaxis.set_major_formatter(date_format)  
+
+for label in ax.get_yticklabels():   
+    label.set_fontsize(25)   
+for label in ax.get_xticklabels():   
+    label.set_fontsize(25)   
+
+plt.grid(True)   
+plt.show()
