@@ -1,0 +1,64 @@
+from datetime import datetime  
+import pandas as pd  
+import numpy as np  
+import matplotlib.pyplot as plt
+
+def read_rain_data(filename):  
+    data = []
+    with open(filename, 'r') as file:  
+        for line in file:  
+            year, month, day, hour, rain = line.strip().split()  
+            year = int(year)  
+            month = int(month)  
+            day = int(day)  
+            hour = int(hour)  
+            rain = float(rain)  
+            time = datetime(year, month, day, hour)  
+            data.append([time, rain])   
+    return data    
+data = read_rain_data('fc_rain.txt')   
+df = pd.DataFrame(data, columns=['Time', 'Rain'])   
+df.to_csv('D:/work/file1.csv', index=False)  
+
+def read_top_data(filename):  
+    data = []
+    with open(filename, 'r') as file:  
+        for line in file:  
+            year, month, day, hour, top1, top2 = line.strip().split()  
+            year = int(year)  
+            month = int(month)  
+            day = int(day)  
+            hour = int(hour)  
+            top1 = float(top1)
+            top2 = float(top2)
+            time = datetime(year, month, day, hour)  
+            data.append([time, top1, top2])   
+    return data    
+data = read_top_data('fc_top.txt')   
+df = pd.DataFrame(data, columns=['Time', 'Top1', 'Top2'])   
+df.to_csv('D:/work/file2.csv', index=False)  
+
+df1 = pd.read_csv('file1.csv', parse_dates=['Time'], index_col='Time')  
+df2 = pd.read_csv('file2.csv', parse_dates=['Time'], index_col='Time')  
+
+common_times = df1.index.intersection(df2.index)  
+merged_data = pd.DataFrame(index=common_times)  
+
+merged_data['Rain'] = df1.loc[common_times, 'Rain']    
+merged_data['Top1'] = df2.loc[common_times, 'Top1']  
+merged_data['Top2'] = df2.loc[common_times, 'Top2']  
+merged_data = merged_data[(merged_data['Rain'] >0) & ((merged_data['Top1'] != 0) | (merged_data['Top2'] != 0)) ] 
+merged_data.to_csv('file3.csv')
+
+data1 = pd.read_csv('file3.csv',  header=None)    
+list1 =data1.iloc[1:,1] 
+list2 = data1.iloc[1:,2] 
+list3 = data1.iloc[1:,3] 
+list1 = pd.to_numeric(list1, errors='coerce')  
+list2 = pd.to_numeric(list2, errors='coerce')
+list3 = pd.to_numeric(list3, errors='coerce')
+
+r1=np.corrcoef(list1,list2)
+print(r1)
+r2=np.corrcoef(list1,list3)
+print(r2)
