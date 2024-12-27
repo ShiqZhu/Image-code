@@ -1,0 +1,60 @@
+implicit none
+integer iy,im,id,ih,i,j,k
+real ref,top1,top2,fr,rms1,rms2
+real rr(6:7,31,0:23),gru1(6:7,31,0:23),gru2(6:7,31,0:23)
+real rain(2000),g1(2000),g2(2000)
+k=0
+!--------------------------------arrang
+open(3,file='out_fc.txt',status='old')
+do i=1,10000
+   read(3,*,end=55)im,id,ih,ref,top1,top2,rr(im,id,ih),gru1(im,id,ih),gru2(im,id,ih)
+   if(gru1(im,id,ih).ne.0.and.rr(im,id,ih).ge.0)then
+   !if(rr(im,id,ih).ne.0.and.top1.gt.0)then
+     k=k+1
+     rain(k)=rr(im,id,ih)
+	 g1(k)=gru1(im,id,ih)
+	 g2(k)=gru2(im,id,ih)
+	 !g1(k)=top1
+	 !g2(k)=top2
+   endif
+enddo
+55 close(3)
+write(*,*)k
+call corr(rain,g1,k,fr,rms1)
+write(*,*)"the corr of rain and ref ",fr,rms1
+call corr(rain,g2,k,fr,rms2)
+write(*,*)"the corr of rain and top2 ",fr,rms2
+
+
+
+
+
+
+end
+!*******************************************************
+!*******************************************************
+!*******************************************************
+!***********************************************************
+subroutine corr(z1,z2,n,rr,rms)
+implicit none
+integer n,i
+real z1(n),z2(n),rr,rms
+real rmz1,rmz2,fz1,fz2,cov
+
+rmz1=sum(z1)/float(n)
+rmz2=sum(z2)/float(n)
+
+cov=0.0; fz1=0.0; fz2=0.0; rms=0
+do i=1,n
+   cov=cov+(z1(i)-rmz1)*(z2(i)-rmz2)
+   fz1=fz1+(z1(i)-rmz1)**2
+   fz2=fz2+(z2(i)-rmz2)**2
+   rms=rms+(z1(i)-z2(i))**2
+enddo
+rms=sqrt(rms/n)
+if(fz1.eq.0.or.fz2.eq.0)then
+   rr=0
+else
+   rr=cov/sqrt(fz1*fz2)
+endif
+end
