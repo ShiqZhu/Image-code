@@ -26,7 +26,7 @@ def read_top_data(filename, default_year=2020):
                 print(f"Error in line: {line.strip()}")  
                 print(f"ValueError: {e}")  
     return data
-data = read_top_data('out_ga.txt')  
+data = read_top_data('gru_out_ga.txt')  
 df = pd.DataFrame(data, columns=['Time', 'Rain1', 'Rain2'])   
 df.to_csv('D:/work/file1.csv', index=False)  
 
