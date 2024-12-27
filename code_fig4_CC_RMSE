@@ -5,7 +5,7 @@ real rr(6:7,31,0:23),gru1(6:7,31,0:23),gru2(6:7,31,0:23)
 real rain(2000),g1(2000),g2(2000)
 k=0
 !--------------------------------arrang
-open(3,file='out_fc.txt',status='old')
+open(3,file='gru_out_fc.txt',status='old')
 do i=1,10000
    read(3,*,end=55)im,id,ih,ref,top1,top2,rr(im,id,ih),gru1(im,id,ih),gru2(im,id,ih)
    if(gru1(im,id,ih).ne.0.and.rr(im,id,ih).ge.0)then
