@@ -1,0 +1,67 @@
+import pandas as pd    
+import numpy as np    
+import matplotlib.pyplot as plt   
+plt.rc('font',family='Times New Roman')
+from datetime import datetime  
+import matplotlib.dates as mdates    
+
+def read_top_data(filename, default_year=2020):  
+    data = []  
+    with open(filename, 'r') as file:  
+        for line in file:  
+            try:  
+                month, day, hour, ref, top1, top2, rain, rain1, rain2 = line.strip().split()  
+                month = int(month)  
+                day = int(day)  
+                hour = int(hour)  
+                ref = float(ref)  
+                top1 = float(top1)  
+                top2 = float(top2)  
+                rain = float(rain)  
+                rain1 = float(rain1)  
+                rain2 = float(rain2)  
+                time = datetime(default_year, month, day, hour)  
+                data.append([time, rain1, rain2])  
+            except ValueError as e:    
+                print(f"Error in line: {line.strip()}")  
+                print(f"ValueError: {e}")  
+    return data
+data = read_top_data('out_ga.txt')  
+df = pd.DataFrame(data, columns=['Time', 'Rain1', 'Rain2'])   
+df.to_csv('D:/work/file1.csv', index=False)  
+
+
+df['Top1'] = pd.to_numeric(df['Rain1'], errors='coerce')  
+df['Top2'] = pd.to_numeric(df['Rain2'], errors='coerce')  
+df = df.dropna(subset=['Rain1', 'Rain2'])  
+df.reset_index(drop=True, inplace=True)  
+df['difference'] = df['Rain1'] - df['Rain2']  
+
+plt.figure(figsize=(9, 12))   
+plt.scatter(df['Time'], df['difference'], color='blue')   
+plt.ylim(-4,12)   
+plt.xlabel('Time', fontsize=35)   
+plt.ylabel('Difference', fontsize=35)   
+ax = plt.gca()
+
+locator = mdates.DayLocator(interval=14)  
+formatter = mdates.AutoDateFormatter(locator)  
+ax.xaxis.set_major_formatter(formatter)  
+
+ax.xaxis.set_major_locator(locator)    
+start_date = pd.to_datetime('2020-06-01 00:00:00')  
+end_date = pd.to_datetime('2020-07-31 23:00:00')  
+plt.xlim(start_date, end_date) 
+plt.text(start_date, plt.ylim()[0]-0.9, '06/01', ha='center', fontsize=30)  
+plt.text(end_date+pd.Timedelta(days=2), plt.ylim()[0]-0.9, ' 07/31', ha='right', fontsize=30)
+
+date_format = mdates.DateFormatter('%m/%d')  
+ax.xaxis.set_major_formatter(date_format)  
+
+for label in ax.get_yticklabels():   
+    label.set_fontsize(30)   
+for label in ax.get_xticklabels():   
+    label.set_fontsize(30)   
+
+plt.grid(True)   
+plt.show()
